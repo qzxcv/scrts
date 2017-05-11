@@ -8,14 +8,53 @@
  */
 
 function Worker(creep) {
-  this.__proto__ = creep;
+    var currentState = new Idle(this);
 
-  this.gatherEnergy = function(source, target) {
-    moveTo(source);
-    gatherEnergy(source);
-    moveTo(target);
-    transferEnergy(target);
-  };
+    this.__proto__   = creep;
+    this.source      = pos.findClosestByRange(FIND_SOURCES_ACTIVE);
+
+    this.load = function() {
+        return _.sum(this.carry);
+    };
+
+    this.change = function(state) {
+        currentState = state;
+    };
 }
 
- module.exports = Worker;
+function Idle(worker) {
+    this.next = function(worker) {
+        if(worker.harvest(worker.source) == ERR_NOT_IN_RANGE) {
+            worker.change(new MoveToSource(worker));
+        } else {
+            
+        }
+    };
+}
+
+function MoveToSource(worker) {
+    this.next = function(worker) {
+        worker.change(new CollectEnergy(worker));
+    };
+}
+
+function CollectEnergy(worker) {
+    this.next = function(worker) {
+        worker.change(new MoveToStore(worker));
+    };
+}
+
+function MoveToStore(worker) {
+    this.next = function(worker) {
+        worker.change(new transferEnergy(worker));
+    };
+}
+
+function transferEnergy(worker) {
+    this.next = function(worker) {
+        worker.change(new Idle(worker));
+    };
+}
+
+
+module.exports = Worker;
