@@ -1,6 +1,6 @@
 var Worker = require('worker');
 
-function workerCreator() {
+function WorkerCreator() {
   var result
   var template = [MOVE, CARRY, WORK]
 
@@ -19,7 +19,7 @@ function workerCreator() {
   }
 
   function createCreepOnSpawn(spawn) {
-    return spawn.createCreep(template, null, { role: 'worker'});
+    return spawn.createCreep(template, null, { role: 'worker', state: 'Idle'});
   }
 
   function isOK() {
@@ -37,4 +37,6 @@ function workerCreator() {
   }
 }
 
-module.exports = workerCreator;
+module.exports = WorkerCreator;
+
+// var WorkerCreator = require('workerCreator'); var wc = new WorkerCreator(); wc.createWorker(Game.spawns.Spawn1); wc.isSuccess();
