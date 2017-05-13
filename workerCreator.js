@@ -19,7 +19,7 @@ function WorkerCreator() {
   }
 
   function createCreepOnSpawn(spawn) {
-    return spawn.createCreep(template, null, { role: 'worker', state: 'Idle'});
+    return spawn.createCreep(template, null, { role: 'worker', state: 'idle'});
   }
 
   function isOK() {
