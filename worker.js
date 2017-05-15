@@ -1,77 +1,45 @@
 // var Worker = require('worker'); var w = new Worker(Game.creeps.Hunter); console.log(w);
+// var StateMachine = require('stateMachine');
+var StateMachine = require('stateMachine');
+
+var tt = StateMachine.create({
+            stateStore: Memory,
+            initial: 'idle',
+            events:  [
+                { name: 'idle',
+                    to: 'moveToSource',
+                    callback: function(){
+                        // worker.harvest(worker.source) == ERR_NOT_IN_RANGE;
+                        console.log('changing to moveToSource');
+                        console.log(this.pos);
+                        // console.log(this.harvest(this.source));
+                    } 
+                },
+                { name: 'moveToSource',     to: 'collectSorce',     callback: function(){  } },
+                { name: 'collectSorce',     to: 'moveToStorage',    callback: function(){  } },
+                { name: 'moveToStorage',    to: 'transferSorce',    callback: function(){  } },
+                { name: 'transferSorce',    to: 'idle',             callback: function(){  } }
+            ]
+        });
 
 function Worker(creep) {
-    this.idle = {
-        go: function(worker) {
-            worker.say("idle");
-
-            worker.change('moveToSource');
-        }
-    };
-
-    this.moveToSource = {
-        go: function(worker) {
-            worker.say("Source");
-
-            worker.moveTo(worker.source);
-            if(worker.harvest(worker.source) == OK) {
-                worker.change('collectEnergy'); 
-            }
-        }
-    };
-
-    this.collectEnergy = {
-        go: function(worker) {
-            worker.say("collectEnergy");
-
-            worker.harvest(worker.source);
-            if(worker.isFull()) {
-               worker.change('moveToStore'); 
-            }
-        }
-    };
-
-    this.moveToStore = {
-        go: function(worker) {
-            worker.say("moveToStore");
-
-            worker.moveTo(worker.store);
-            if(worker.upgradeController(worker.store) == OK) {
-                worker.change('transferEnergy');
-            }
-            // if(worker.transfer(worker.store, RESOURCE_ENERGY) == OK) {
-            //     worker.change('transferEnergy');
-            // }
-        }
-    };
-
-    this.transferEnergy = {
-        go: function(worker) {
-            worker.say("transferEnergy");
-            worker.upgradeController(worker.store);
-            // worker.transfer(worker.store, RESOURCE_ENERGY);
-            if(worker.isEmpty()) {
-                worker.change('idle');
-            }
-        }
-    };
+    // this.__proto__   = new StateMachine(creep);
+    this.__proto__   = creep;
 
     var currentState = this[creep.memory.state];
 
-    this.__proto__   = creep;
     this.source      = creep.pos.findClosestByRange(FIND_SOURCES_ACTIVE);
-    this.store       = creep.room.controller
+    this.storage     = creep.room.controller
 
-    this.run = function() {
-        console.log(currentState);
-        currentState.go(this);
-    };
+    // this.run = function() {
+    //     currentState.go(this);
+    // };
 
-    this.change = function(state) {
-        currentState = this[state];
-        creep.memory.state = state;
-        currentState.go(this);
-    };
+    // this.change = function(state) {
+    //     currentState = this[state];
+    //     creep.memory.state = state;
+    //     currentState.go(this);
+    // };
 
     this.load = function() {
         return _.sum(this.carry);
