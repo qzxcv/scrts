@@ -7,9 +7,7 @@ function WorkerCreator() {
   this.createWorker = function(spawn) {
     result = createCreepOnSpawn(spawn);
 
-    if(isOK()) {
-      this.createdWorker = formatWorker();
-    } else {
+    if(!isOK()) {
       this.error = handleError();
     }
   };

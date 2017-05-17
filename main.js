@@ -1,27 +1,61 @@
 var StateMachine = require('stateMachine');
 var Worker = require('worker');
-var w = new Worker(Game.creeps.Vivian);
-// console.log(w.harvest(w.source));
 
-var tt = StateMachine.create({
+//state machine for workers
+var sm = StateMachine.create({
             stateStore: Memory,
-            initial: 'idle',
+            initial: 'moveToSource',
             events:  [
-                { name: 'idle',
-                    to: 'moveToSource',
-                    callback: function(){
-                        // worker.harvest(worker.source) == ERR_NOT_IN_RANGE;
-                        console.log('changing to moveToSource');
-                        console.log(this.pos);
-                        // console.log(this.harvest(this.source));
-                    } 
+                { name: 'moveToSource',
+                    to: 'collectSource',
+                    callback: function(worker){
+                        if(worker.harvest(worker.source) == ERR_NOT_IN_RANGE) {
+                            worker.moveTo(worker.source);
+                            worker.say('source');
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
                 },
-                { name: 'moveToSource',     to: 'collectSorce',     callback: function(){  } },
-                { name: 'collectSorce',     to: 'moveToStorage',    callback: function(){  } },
-                { name: 'moveToStorage',    to: 'transferSorce',    callback: function(){  } },
-                { name: 'transferSorce',    to: 'idle',             callback: function(){  } }
+                { name: 'collectSource',
+                    to: 'moveToStorage',
+                    callback: function(worker){
+                        if(!worker.isFull()) {
+                            worker.harvest(worker.source);
+                            worker.say('harvest');
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                },
+                { name: 'moveToStorage', 
+                    to: 'transferSource',
+                    callback: function(worker){
+                        if(worker.transfer(worker.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            worker.moveTo(worker.storage);
+                            worker.say('storage');
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                },
+                { name: 'transferSource',
+                    to: 'moveToSource',
+                    callback: function(worker){
+                        if(!worker.isEmpty()) {
+                            worker.transfer(worker.storage, RESOURCE_ENERGY);
+                            worker.say('transfer');
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
             ]
-        }, w);
+        });
 
-w.__proto__ = tt;
+var w = new Worker(Game.creeps.Liliana, sm);
 w.run();
